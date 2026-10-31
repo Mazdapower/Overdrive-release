@@ -40,6 +40,8 @@ public class BydEventDaemon {
     private static BodyworkManager bodyworkManager;
     
     public static void main(String[] args) {
+        // No-internet build: block all non-loopback outbound from this process.
+        com.overdrive.app.netguard.NoInternetGuard.install();
         int myUid = android.os.Process.myUid();
         
         logger.info("=== BYD Event Daemon Starting ===");

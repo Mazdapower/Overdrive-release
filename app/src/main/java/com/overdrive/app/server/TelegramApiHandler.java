@@ -360,7 +360,10 @@ public class TelegramApiHandler {
         // Proxy attempt didn't reach a verdict (or no proxy): invalidate the
         // shared probe cache (proxy may be down) and retry DIRECT.
         if (haveProxy) com.overdrive.app.mqtt.ProxyHelper.invalidateCache();
-        GetMeResult direct = getMeOnce(token, java.net.Proxy.NO_PROXY);
+        GetMeResult direct = getMeOnce(token,
+                com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED
+                        ? java.net.Proxy.NO_PROXY
+                        : com.overdrive.app.netguard.NoInternetGuard.blockedProxy());
         return direct != null ? direct : new GetMeResult();
     }
 

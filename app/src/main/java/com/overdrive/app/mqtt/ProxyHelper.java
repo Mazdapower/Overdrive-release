@@ -252,6 +252,12 @@ public class ProxyHelper {
      * {@link Proxy#NO_PROXY}. Never the Tailscale listener — see {@link #isEgressProxyAvailable()}.
      */
     public static Proxy getHttpProxy() {
+        // No-internet build: fail closed. Clients that set this proxy explicitly
+        // bypass the default ProxySelector, so point them at the dead loopback
+        // port instead of returning NO_PROXY (direct).
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            return com.overdrive.app.netguard.NoInternetGuard.blockedProxy();
+        }
         if (isEgressProxyAvailable()) {
             return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(PROXY_HOST, PROXY_PORT));
         }
@@ -267,6 +273,13 @@ public class ProxyHelper {
      * job, which intentionally has no direct fallback.
      */
     public static java.util.List<Proxy> proxyRouteChain(Proxy selected) {
+        // No-internet build: never offer a DIRECT fallback — a chain of
+        // [proxy, DIRECT] would silently reach the internet when the proxy leg
+        // fails. Always dead-end on the loopback discard port.
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            return java.util.Collections.singletonList(
+                    com.overdrive.app.netguard.NoInternetGuard.blockedProxy());
+        }
         if (selected == null || Proxy.NO_PROXY.equals(selected)) {
             return java.util.Collections.singletonList(Proxy.NO_PROXY);
         }
@@ -315,6 +328,12 @@ public class ProxyHelper {
      * public hosts use {@link #getHttpProxy()}.
      */
     public static Proxy routeFor(String host) {
+        // No-internet build: loopback direct, everything else dead-ended.
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            return isLoopbackHost(host)
+                    ? Proxy.NO_PROXY
+                    : com.overdrive.app.netguard.NoInternetGuard.blockedProxy();
+        }
         if (isTailnetHost(host)) return tailscaleProxy();
         if (isLoopbackHost(host)) return Proxy.NO_PROXY;
         if (isLanHost(host)) return isProxyExpected() ? tailscaleProxy() : Proxy.NO_PROXY;
@@ -417,6 +436,11 @@ public class ProxyHelper {
      * If proxy is not available, returns the default SocketFactory (direct connection).
      */
     public static SocketFactory getMqttSocketFactory() {
+        // No-internet build: MQTT ignores ProxySelector, so hand Paho a
+        // socket factory that refuses any non-loopback connection.
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            return com.overdrive.app.netguard.NoInternetGuard.blockingSocketFactory();
+        }
         if (isProxyAvailable()) {
             return new ProxiedSocketFactory();
         }
@@ -438,6 +462,12 @@ public class ProxyHelper {
             SSLSocketFactory baseSslFactory = trustAll
                     ? getTrustAllSslFactory()
                     : (SSLSocketFactory) SSLSocketFactory.getDefault();
+
+            // No-internet build: Paho's SSL module bypasses ProxySelector, so
+            // wrap the real factory in a guard that refuses non-local hosts.
+            if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+                return com.overdrive.app.netguard.NoInternetGuard.blockingSslSocketFactory(baseSslFactory);
+            }
 
             if (isProxyAvailable()) {
                 return new ProxiedSslSocketFactory(baseSslFactory, proxyPort);

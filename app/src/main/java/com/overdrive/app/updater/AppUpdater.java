@@ -1717,7 +1717,10 @@ public class AppUpdater {
                         + "); retrying direct");
                 com.overdrive.app.mqtt.ProxyHelper.invalidateCache();
                 try {
-                    doStreamingDownload(url, outputPath, java.net.Proxy.NO_PROXY, callback, deadlineNanos);
+                    java.net.Proxy directRetry = com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED
+                            ? java.net.Proxy.NO_PROXY
+                            : com.overdrive.app.netguard.NoInternetGuard.blockedProxy();
+                    doStreamingDownload(url, outputPath, directRetry, callback, deadlineNanos);
                 } catch (Exception retry) {
                     throw new java.io.IOException(
                             primary.getMessage() + " (direct retry: " + retry.getMessage() + ")");

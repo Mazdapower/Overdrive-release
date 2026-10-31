@@ -64,6 +64,8 @@ object AnalyticsPinger {
      * on success — call from a background scheduler thread, never the UI/warn path.
      */
     fun maybePing(nowMs: Long) {
+        // No-internet build: analytics is a phone-home and is hard-disabled.
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) return
         try {
             val section = try {
                 UnifiedConfigManager.forceReload().optJSONObject(SECTION)

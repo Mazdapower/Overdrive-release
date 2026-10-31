@@ -181,6 +181,13 @@ public class TelegramBotDaemon {
     
     public static void main(String[] args) {
         com.overdrive.app.util.ScratchRoot.bootstrapFromEnv();
+        // No-internet build: block non-loopback outbound here too, and refuse
+        // to run at all — Telegram polling is a pure internet feature.
+        com.overdrive.app.netguard.NoInternetGuard.install();
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            System.out.println("TelegramBotDaemon: disabled in this no-internet build");
+            return;
+        }
         int myUid = android.os.Process.myUid();
         int myPid = android.os.Process.myPid();
         

@@ -80,6 +80,14 @@ public class GlobalProxyDaemon {
 
     public static void main(String[] args) {
         com.overdrive.app.util.ScratchRoot.bootstrapFromEnv();
+        // No-internet build: install the guard and refuse to start. This daemon
+        // launches the external sing-box binary, which is a separate process and
+        // therefore cannot be blocked by the in-process guard.
+        com.overdrive.app.netguard.NoInternetGuard.install();
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            log("Remote access disabled in this build — GlobalProxyDaemon will not start.");
+            return;
+        }
         log("=== Global Proxy Daemon ===");
 
         try {

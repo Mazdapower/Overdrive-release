@@ -36,6 +36,11 @@ class SingboxLauncher(
      * Launch sing-box proxy via ADB shell.
      */
     fun launchSingbox(callback: SingboxCallback) {
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            logManager.error(TAG, "sing-box disabled in this no-internet build")
+            callback.onError("Remote access (sing-box) is disabled in this no-internet build.")
+            return
+        }
         logManager.info(TAG, "Launching sing-box...")
         callback.onLog("Setting up sing-box...")
         

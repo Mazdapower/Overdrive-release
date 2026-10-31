@@ -573,6 +573,8 @@ public class CameraDaemon {
 
     public static void main(String[] args) {
         com.overdrive.app.util.ScratchRoot.bootstrapFromEnv();
+        // No-internet build: block all non-loopback outbound from this process.
+        com.overdrive.app.netguard.NoInternetGuard.install();
         initFileLogging();
 
         // CRITICAL: Acquire singleton lock FIRST - exit if another instance is running

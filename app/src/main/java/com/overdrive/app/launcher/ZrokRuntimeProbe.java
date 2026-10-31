@@ -300,7 +300,9 @@ public final class ZrokRuntimeProbe {
         try {
             Proxy proxy = portOpen(PROXY_PORT, PORT_TIMEOUT_MS)
                     ? new Proxy(Proxy.Type.HTTP, new InetSocketAddress(LOOPBACK, PROXY_PORT))
-                    : Proxy.NO_PROXY;
+                    : (com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED
+                            ? Proxy.NO_PROXY
+                            : com.overdrive.app.netguard.NoInternetGuard.blockedProxy());
             connection = (HttpURLConnection) new URL(url).openConnection(proxy);
             connection.setConnectTimeout(HTTP_TIMEOUT_MS);
             connection.setReadTimeout(HTTP_TIMEOUT_MS);

@@ -44,7 +44,12 @@ public final class DaemonBootstrap {
         }
         
         log("=== DaemonBootstrap Starting ===");
-        
+
+        // No-internet build: daemons also run Java outbound paths (analytics,
+        // updater, MQTT, Telegram, BYD cloud). Install the same kill-switch so
+        // none of them can reach the network. Loopback IPC is preserved.
+        com.overdrive.app.netguard.NoInternetGuard.install();
+
         try {
             // Step 1: Create app context using hardcoded package name
             appContext = createAppContext();

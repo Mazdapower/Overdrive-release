@@ -418,7 +418,12 @@ open class MainActivity : AppCompatActivity() {
                 }
             }
 
-            checkForAppUpdate()
+            // No-internet build: skip the automatic GitHub update check on
+            // launch (manual check in Settings is still available but will be
+            // blocked by NoInternetGuard at the socket layer).
+            if (com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+                checkForAppUpdate()
+            }
         }, 10000) // 10 seconds after launch
         
         // Schedule periodic update checks (every 6 hours)

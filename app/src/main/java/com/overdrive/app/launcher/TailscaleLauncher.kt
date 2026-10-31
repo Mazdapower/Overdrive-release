@@ -360,6 +360,11 @@ class TailscaleLauncher(
     }
 
     fun launchTailscale(callback: TailscaleCallback) {
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            logManager.error(TAG, "Tailscale disabled in this no-internet build")
+            callback.onError("Remote access (Tailscale) is disabled in this no-internet build.")
+            return
+        }
         // Check the deployed payload BEFORE the running-daemon fast path. A
         // package update does not stop the UID-2000 tailscaled process, so the
         // old ordering skipped redeployment forever on always-on installs.
@@ -481,6 +486,11 @@ class TailscaleLauncher(
     }
 
     fun launchTailscaleDaemon(useProxy: Boolean, enableProxy: Boolean, callback: TailscaleCallback) {
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            logManager.error(TAG, "Tailscale disabled in this no-internet build")
+            callback.onError("Remote access (Tailscale) is disabled in this no-internet build.")
+            return
+        }
         invalidateDashboardLifecycle()
         val launchGeneration = dashboardLifecycleGeneration.get()
         securedDashboardDaemon = null

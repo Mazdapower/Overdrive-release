@@ -27,6 +27,11 @@ class OverdriveApplication : Application() {
         // Before anything that resolves a shared path.
         com.overdrive.app.util.ScratchRoot.bootstrap(this)
 
+        // No-internet build: install the process-wide outbound kill-switch
+        // FIRST, before any subsystem can open a socket. Loopback (needed by
+        // the dashcam IPC and local API) is preserved; everything else throws.
+        com.overdrive.app.netguard.NoInternetGuard.install()
+
         try {
             startService(Intent(this, com.overdrive.app.remote.RemoteDevViewBridgeService::class.java))
         } catch (error: Throwable) {

@@ -99,6 +99,11 @@ class TunnelLauncher(
      * Reuses existing tunnel if already running.
      */
     fun launchCloudflared(callback: TunnelCallback) {
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            logManager.error(TAG, "Cloudflared disabled in this no-internet build")
+            callback.onError("Remote access (Cloudflared) is disabled in this no-internet build.")
+            return
+        }
         val (flight, ownsLaunch) = registerLaunch(callback)
         if (!ownsLaunch) {
             logManager.info(TAG, "Cloudflared launch already in progress; joining existing launch")

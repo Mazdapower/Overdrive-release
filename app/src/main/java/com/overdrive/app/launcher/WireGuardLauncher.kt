@@ -135,6 +135,11 @@ class WireGuardLauncher(
     }
 
     fun launch(callback: WireGuardCallback) {
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            logManager.error(TAG, "WireGuard disabled in this no-internet build")
+            callback.onError("Remote access (WireGuard) is disabled in this no-internet build.")
+            return
+        }
         hasConfig { configured ->
             if (!configured) {
                 logManager.warn(TAG, "No WireGuard configuration")

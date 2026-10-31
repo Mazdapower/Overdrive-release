@@ -60,6 +60,8 @@ public class SentryDaemon {
     
     public static void main(String[] args) {
         com.overdrive.app.util.ScratchRoot.bootstrapFromEnv();
+        // No-internet build: block all non-loopback outbound from this process.
+        com.overdrive.app.netguard.NoInternetGuard.install();
         int myUid = android.os.Process.myUid();
         
         // Configure DaemonLogger for daemon context (enable stdout for app_process)

@@ -250,6 +250,11 @@ class ZrokLauncher(
      * 2. Otherwise, use public mode (random URL)
      */
     fun launchZrok(callback: ZrokCallback) {
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            logManager.error(TAG, "Zrok disabled in this no-internet build")
+            callback.onError("Remote access (Zrok) is disabled in this no-internet build.")
+            return
+        }
         logManager.info(TAG, "Launching Zrok tunnel...")
         callback.onLog("Loading token...")
         
@@ -314,6 +319,11 @@ class ZrokLauncher(
      * @param permanentUrl The known permanent URL (e.g., https://byd-sentry-01.share.zrok.io)
      */
     fun launchZrokReserved(shareToken: String, permanentUrl: String, callback: ZrokCallback) {
+        if (!com.overdrive.app.netguard.NoInternetGuard.REMOTE_ACCESS_ENABLED) {
+            logManager.error(TAG, "Zrok disabled in this no-internet build")
+            callback.onError("Remote access (Zrok) is disabled in this no-internet build.")
+            return
+        }
         reservedShareToken = shareToken
         logManager.info(TAG, "Launching Zrok in RESERVED mode...")
         callback.onLog("Starting reserved tunnel...")
